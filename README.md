@@ -32,6 +32,14 @@ https://github.com/vysahjk/dockerizing_node_server
 sudo service docker start
 ```
 
+## Créer l'image de projet personnel
+
+```bash
+git clone https://github.com/vysahjk/dockerizing_node_server.git
+cd dockerizing_node_server
+docker build . -t toto-server
+```
+
 ## Initier le fichier docker compose
 
 ```bash
