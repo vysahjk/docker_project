@@ -63,15 +63,34 @@ services:
     depends_on:
       - mariadb
 
-  # ldap-auth:
-  #   image: lscr.io/linuxserver/ldap-auth:latest
-  #   container_name: ldap-auth
-  #   environment:
-  #     - TZ=Europe/London
-  #     # ports:
-  #     # - 8888:8888
-  #     # - 9000:9000
-  #   restart: unless-stopped
+  openldap:
+    image: osixia/openldap:1.5.0
+    container_name: ldapserver
+    hostname: ldapserver
+    volumes:
+      - ./storage/ldap_db:/var/lib/ldap
+      - ./storage/ldap_config:/etc/ldap/slapd.d
+    environment:
+      - LDAP_ORGANISATION=nibiynov-org
+      - LDAP_DOMAIN=nibiynov.org
+      - LDAP_ADMIN_USERNAME=admin
+      - LDAP_ADMIN_PASSWORD=admin
+      - LDAP_CONFIG_PASSWORD=config
+      - "LDAP_BASE_DN=dc=nibiynov,dc=org"
+      - LDAP_RFC2307BIS_SCHEMA=true
+      - LDAP_REMOVE_CONFIG_AFTER_SETUP=true
+      - LDAP_TLS_VERIFY_CLIENT=never
+
+  openldap-ui:
+    image: osixia/phpldapadmin:latest
+    container_name: openldap-ui
+    environment:
+      - PHPLDAPADMIN_LDAP_HOSTS=ldapserver
+      - PHPLDAPADMIN_HTTPS=false
+    depends_on:
+      - openldap
+    ports:
+      - 18080:80
 
   wordpress:
     image: wordpress
@@ -143,6 +162,7 @@ services:
     volumes:
       - /home/aptalca/appdata/heimdall:/config
     restart: unless-stopped
+
   swag:
     image: lscr.io/linuxserver/swag
     container_name: swag
@@ -169,3 +189,5 @@ volumes:
   db:
   wordpress:
   bookstack:
+  openldap_data:
+    driver: local
