@@ -1,0 +1,157 @@
+services:
+
+  mattermost:
+    image: mattermost/platform
+    container_name: mattermost
+    # ports:
+    #   - 8065:8065
+
+  gitea:
+    image: gitea/gitea:1.17.3
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    restart: always
+    volumes:
+      - ./gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    # ports:
+    #   - "3000:3000"
+    #   - "222:22"
+
+  plik:
+    image: rootgg/plik:latest
+    container_name: plik
+    volumes:
+      - /home/aptalca/appdata/plik/data:/data
+    ports:
+      - 8080:8080
+    restart: "unless-stopped"
+
+  bookstack:
+    image: lscr.io/linuxserver/bookstack
+    container_name: bookstack
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - APP_URL=/
+      - DB_HOST=mariadb
+      - DB_USER=nextcloud
+      - DB_PASS=toto
+      - DB_DATABASE=nextcloud
+    volumes:
+      - bookstack:/config
+    ports:
+      - 6875:80
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+
+  # ldap-auth:
+  #   image: lscr.io/linuxserver/ldap-auth:latest
+  #   container_name: ldap-auth
+  #   environment:
+  #     - TZ=Europe/London
+  #     # ports:
+  #     # - 8888:8888
+  #     # - 9000:9000
+  #   restart: unless-stopped
+
+  wordpress:
+    image: wordpress
+    container_name: wordpress
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_USER: nextcloud
+      WORDPRESS_DB_PASSWORD: toto
+      WORDPRESS_DB_NAME: wordpress
+    depends_on:
+      - mariadb
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  phpmyadmin:
+    image: lscr.io/linuxserver/phpmyadmin:latest
+    container_name: phpmyadmin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - PMA_ARBITRARY=1
+      - PMA_ABSOLUTE_URI=https://phpmyadmin.nibiynov.duckdns.org/
+    links:
+      - mariadb
+    volumes:
+      - /home/aptalca/appdata/phpmyadmin:/config
+    restart: unless-stopped
+
+  mariadb:
+    image: lscr.io/linuxserver/mariadb:latest
+    container_name: nextcloud_mariadb
+    restart: always
+    volumes:
+      - db:/config
+    ports:
+      - 3306:3306
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - MYSQL_ROOT_PASSWORD=toto
+      - MYSQL_PASSWORD=toto
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+
+  nextcloud_app:
+    image: lscr.io/linuxserver/nextcloud:latest
+    container_name: nextcloud
+    restart: always
+    links:
+      - mariadb
+    volumes:
+      - nextcloud:/config
+
+  heimdall:
+    image: lscr.io/linuxserver/heimdall
+    container_name: heimdall
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - /home/aptalca/appdata/heimdall:/config
+    restart: unless-stopped
+  swag:
+    image: lscr.io/linuxserver/swag
+    container_name: swag
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - URL=nibiynov.duckdns.org
+      - SUBDOMAINS=wildcard
+      - TOKEN=cea5ced0-b4ec-4137-b5dd-ce8bb2076f43
+      - VALIDATION=dns
+      - DNSPLUGIN=duckdns
+      - EMAIL=vysahjk@gmail.com
+    volumes:
+      - /home/aptalca/appdata/swag:/config
+    ports:
+      - 443:443
+    restart: unless-stopped
+
+volumes:
+  nextcloud:
+  db:
+  wordpress:
+  bookstack:
