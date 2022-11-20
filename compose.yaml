@@ -1,5 +1,19 @@
 services:
 
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  node-express:
+    image: toto-server
+    container_name: node-express
+    restart: always
+    # ports:
+    # - 4200:3000
+
   mattermost:
     image: mattermost/platform
     container_name: mattermost

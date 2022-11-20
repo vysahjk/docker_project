@@ -15,9 +15,10 @@ Toutes les applications sont dockeriser.
 9. phpmyadmin
 10. mariadb
 11. nextcloud
-12. server nodejs
+12. mongodb
+13. server nodejs (code tp2 - mongodb)
 
-Le code de tp#2 est un server nodejs.
+Le code de tp#2 est un serveur nodejs express
 
 ```bash
 https://github.com/vysahjk/dockerizing_node_server
